@@ -128,7 +128,7 @@ setup(
     packages=find_packages(),
     ext_modules=[CMakeExtension('funcs')],
     cmdclass={'build_ext': CMakeBuild},
-    version='0.0.2',
+    version='0.1.0',
     license='MIT',
     description='Closing Flow',
     author='Kaidi Shen',
