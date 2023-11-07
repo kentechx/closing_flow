@@ -4,8 +4,8 @@ import scipy.sparse as sp
 import igl
 import gpytoolbox
 
-from pathlib import Path
-from funcs import per_face_prin_curvature
+from .funcs import per_face_prin_curvature
+from typing import Callable
 
 
 def dihedral_angles(vs, fs):
@@ -66,35 +66,36 @@ def incident_faces(fs: np.ndarray, vids: np.ndarray, v_incidence=2):
 
 
 def closing_flow(V: np.ndarray, F: np.ndarray,
-                 maxiter=100,
-                 dt=1.,  # Time step
-                 bd=1 / 0.4,  # Bound of curvature
-                 h=0.05,  # Edge length
-                 remesh_iterations=1,
-                 self_intersect=False,
-                 opening=False,
-                 always_recompute=False,
-                 is_active=None,
-                 quadric_curvatures=False,
-                 tol=1e-7,
+                 maxiter: int = 100,
+                 dt: float = 1.,  # Time step
+                 bd: float = 1 / 0.4,  # Bound of curvature
+                 h: float = 0.05,  # Edge length
+                 remesh_iterations: int = 1,
+                 self_intersect: bool = False,
+                 opening: bool = False,
+                 always_recompute: bool = False,
+                 is_active: Callable = None,
+                 quadric_curvatures: bool = False,
+                 tol: float = 1e-7,
                  ):
     """
-    :param V:
-    :param F:
-    :param maxiter:
-    :param dt:
-    :param bd:
-    :param h:
-    :param remesh_iterations:
-    :param self_intersect:
-    :param opening:
-    :param always_recompute:
-    :param is_active:
-    :param quadric_curvatures:
-    :param tol:
+    :param V: vertices of the input mesh
+    :param F: faces of the input mesh
+    :param maxiter: maximum number of iterations
+    :param dt: time step of the flow
+    :param bd: bound of curvature
+    :param h: edge length of remeshing
+    :param remesh_iterations: number of remeshing iterations
+    :param self_intersect: whether to detect self-intersection faces
+    :param opening: whether to do opening operation
+    :param always_recompute: whether to recompute the active set at each iteration
+    :param is_active: a function that takes the curvature as input and returns a boolean array indicating whether the
+        vertex is active
+    :param quadric_curvatures: whether to use quadric curvatures
+    :param tol: tolerance of convergence
     :return:
-        U: vertices
-        G: faces
+        U: the output mesh vertices
+        G: the output mesh faces
     """
     Vfull = V.copy()
     Ffull = F.copy()
@@ -163,10 +164,7 @@ def closing_flow(V: np.ndarray, F: np.ndarray,
         fixed = np.unique(np.concatenate([fixed_test, boundary_verts]))
         fixed_xyz = np.concatenate([fixed, fixed + len(V), fixed + len(V) * 2])
 
-        print('implement curvature')
         PD1, PD2, _, _ = per_face_prin_curvature(V, F)
-        # PD1 = scipy.io.loadmat('/media/opening-and-closing-surfaces/figures/handles/PD1.mat')['PD1']
-        # PD2 = scipy.io.loadmat('/media/opening-and-closing-surfaces/figures/handles/PD2.mat')['PD2']
         if opening:
             PD1 = PD2
 
@@ -240,7 +238,7 @@ def closing_flow(V: np.ndarray, F: np.ndarray,
             assert False
 
         if (iter + 1) % 10 == 0:
-            dist = igl.point_mesh_squared_distance(Vfull, Vprev, Fprev)
+            dist = igl.point_mesh_squared_distance(Vfull, Vprev, Fprev)[0]
             if dist.max() < tol:
                 # print("Converged")
                 break
