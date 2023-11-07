@@ -1,7 +1,6 @@
 include README.md LICENSE
 graft 3rd_party/eigen/Eigen
 graft 3rd_party/libigl/include
-graft 3rd_party/pybind11/include
-graft 3rd_party/pybind11/tools
+graft 3rd_party/pybind11
 graft src
 global-include CMakeLists.txt *.cmake
