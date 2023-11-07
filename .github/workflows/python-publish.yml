@@ -38,27 +38,34 @@ jobs:
         run: python -m pip install cibuildwheel==2.16.2
   
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --output-dir dist
         # to supply options, put them in 'env', like:
         # env:
         #   CIBW_SOME_OPTION: value
   
       - uses: actions/upload-artifact@v3
         with:
-          path: ./wheelhouse/*.whl
+          name: python-package-distributions
+          path: ./dist/*.whl
           
   publish:
     needs: build_wheels
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
-          path: dist/
+          name: python-package-distributions
+          path: dist
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: dist
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          dist_dir: dist/
